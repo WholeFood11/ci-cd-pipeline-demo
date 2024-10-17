@@ -1,0 +1,11 @@
+{
+  "name": "ci-cd-pipeline-demo",
+  "version": "1.0.0",
+  "description": "A demo project for CI/CD pipeline using GitHub Actions",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
