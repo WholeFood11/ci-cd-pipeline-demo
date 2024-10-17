@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+      - dev
+      - stage
   pull_request:
     branches:
       - main
+      - dev
+      - stage
 
 jobs:
   build:
@@ -24,19 +28,63 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
     - name: Run tests
       run: npm test
 
-  deploy:
-    needs: build
+  deploy_dev:
     runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/dev'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to Dev Environment
+      run: |
+        echo "Deploying to development server..."
+        # Add your deployment commands for dev environment here
+
+  deploy_stage:
+    runs-on: ubuntu-latest
+    needs: deploy_dev
+    if: github.ref == 'refs/heads/stage'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to Staging Environment
+      run: |
+        echo "Deploying to staging server..."
+        # Add your deployment commands for staging environment here
+
+  deploy_prod:
+    runs-on: ubuntu-latest
+    needs: deploy_stage
     if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Deploy to Production
+    - name: Deploy to Production Environment
       run: |
         echo "Deploying to production server..."
-        # Add your deployment commands here
+        # Add your deployment commands for production environment here
