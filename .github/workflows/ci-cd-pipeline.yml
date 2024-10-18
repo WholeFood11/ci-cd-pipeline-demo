@@ -2,89 +2,56 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - dev
-      - stage
+    paths:
+      - 'dev/**'
+      - 'stg/**'
+      - 'prod/**'
   pull_request:
     branches:
       - main
-      - dev
-      - stage
+      - release
+    paths:
+      - 'stg/**'
+      - 'prod/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Build and Test
+        run: |
+          echo "Building and testing..."
+          # Add your build and test logic here
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    - name: Install dependencies
-      run: npm install
-
-  test:
+  deploy-dev:
     runs-on: ubuntu-latest
     needs: build
-
+    if: github.ref == 'refs/heads/main' || github.event_name == 'push'
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Deploy to Dev
+        run: |
+          echo "Deploying to Dev..."
+          # Add your deployment logic for Dev here
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Run tests
-      run: npm test
-
-  deploy_dev:
+  deploy-stg:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/dev'
-
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to Staging..."
+          # Add your deployment logic for Staging here
 
-    - name: Deploy to Dev Environment
-      run: |
-        echo "Deploying to development server..."
-        # Add your deployment commands for dev environment here
-
-  deploy_stage:
+  deploy-prod:
     runs-on: ubuntu-latest
-    needs: deploy_dev
-    if: github.ref == 'refs/heads/stage'
-
+    needs: deploy-stg
+    if: github.event_name == 'workflow_dispatch'
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Deploy to Staging Environment
-      run: |
-        echo "Deploying to staging server..."
-        # Add your deployment commands for staging environment here
-
-  deploy_prod:
-    runs-on: ubuntu-latest
-    needs: deploy_stage
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Deploy to Production Environment
-      run: |
-        echo "Deploying to production server..."
-        # Add your deployment commands for production environment here
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to Production..."
+          # Add your deployment logic for Production here
